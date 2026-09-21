@@ -1,0 +1,5 @@
+<settings>
+    <localRepository>/tmp/repo</localRepository>
+    <mirrors>
+    </mirrors>
+</settings>

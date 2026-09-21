@@ -8,76 +8,103 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  plugin:
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          - os: macos-latest
-            binary: build/mvnex
-            executable: mvnex
-            asset: mvnex-macos.zip
-          - os: ubuntu-latest
-            binary: build/mvnex
-            executable: mvnex
-            asset: mvnex-linux-x64.zip
-          - os: windows-latest
-            binary: build/Release/mvnex.exe
-            executable: mvnex.exe
-            asset: mvnex-windows-x64.zip
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: [17, 21]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build --config Release
-
-      - name: Smoke test
-        run: ${{ matrix.binary }} --version
-
-      - name: Package binary
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          cmake -E make_directory dist/package
-          cmake -E copy ${{ matrix.binary }} dist/package/${{ matrix.executable }}
-
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            cp build/Release/*.dll dist/package/
-          fi
-
-          cd dist/package
-          cmake -E tar cf ../${{ matrix.asset }} --format=zip .
-
-      - name: Upload binary
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/upload-artifact@v4
+      - uses: actions/setup-java@v6
         with:
-          name: ${{ matrix.asset }}
-          path: dist/${{ matrix.asset }}
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Unit and integration tests
+        run: mvn -B -ntp verify
+
+  # The declared requiredMavenVersion. Maven 3.9.0 cannot run aggregator goals without a POM
+  # (MavenProject.getCollectedProjects() is null), so the floor is 3.9.1.
+  maven-floor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Install Maven 3.9.1
+        run: |
+          curl -fsSL -o maven.zip https://archive.apache.org/dist/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.zip
+          unzip -q maven.zip -d "$RUNNER_TEMP"
+
+      - name: Unit and integration tests on Maven 3.9.1
+        run: '"$RUNNER_TEMP/apache-maven-3.9.1/bin/mvn" -B -ntp verify'
+
+  # Early warning only: Maven 4 is a release candidate.
+  maven-4:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Install Maven 4.0.0-rc-6
+        run: |
+          curl -fsSL -o maven.zip https://archive.apache.org/dist/maven/maven-4/4.0.0-rc-6/binaries/apache-maven-4.0.0-rc-6-bin.zip
+          unzip -q maven.zip -d "$RUNNER_TEMP"
+
+      - name: Unit and integration tests on Maven 4.0.0-rc-6
+        run: '"$RUNNER_TEMP/apache-maven-4.0.0-rc-6/bin/mvn" -B -ntp verify'
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [plugin, maven-floor]
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Download binaries
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
+      - uses: actions/checkout@v7
 
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Set the version from the tag
+        run: mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.22.0:set -DnewVersion="${GITHUB_REF_NAME#v}" -DgenerateBackupPoms=false
+
+      - name: Build the plugin, sources and javadoc
+        run: mvn -B -ntp package source:jar-no-fork javadoc:jar -DskipTests -Dinvoker.skip
+
+      - name: Collect release files
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir dist
+          cp "target/ex-maven-plugin-$version.jar" "target/ex-maven-plugin-$version-sources.jar" \
+             "target/ex-maven-plugin-$version-javadoc.jar" dist/
+          cp pom.xml "dist/ex-maven-plugin-$version.pom"
+
+      - name: Create GitHub prerelease
+        uses: softprops/action-gh-release@v3
         with:
           prerelease: true
           files: dist/*

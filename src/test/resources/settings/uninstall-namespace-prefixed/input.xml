@@ -1,0 +1,5 @@
+<s:settings xmlns:s="http://maven.apache.org/SETTINGS/1.2.0">
+  <s:pluginGroups>
+    <s:pluginGroup>com.sebas3261</s:pluginGroup>
+  </s:pluginGroups>
+</s:settings>

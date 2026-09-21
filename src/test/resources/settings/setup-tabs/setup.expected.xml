@@ -1,0 +1,6 @@
+<settings>
+	<pluginGroups>
+		<pluginGroup>org.mortbay.jetty</pluginGroup>
+		<pluginGroup>com.sebas3261</pluginGroup>
+	</pluginGroups>
+</settings>

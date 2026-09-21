@@ -1,0 +1,6 @@
+<settings>
+  <pluginGroups>
+    <pluginGroup>org.mortbay.jetty</pluginGroup>
+    <pluginGroup>org.codehaus.cargo</pluginGroup>
+  </pluginGroups>
+</settings>

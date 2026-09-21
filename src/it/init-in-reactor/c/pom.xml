@@ -1,0 +1,6 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent><groupId>com.example.it</groupId><artifactId>reactor</artifactId><version>1</version></parent>
+    <artifactId>c</artifactId>
+    <packaging>pom</packaging>
+</project>

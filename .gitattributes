@@ -1,0 +1,3 @@
+# Test fixtures are compared byte-for-byte; never normalize their line endings.
+src/test/resources/** -text
+src/it/** -text

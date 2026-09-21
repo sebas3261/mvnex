@@ -474,47 +474,30 @@ A future `--no-color` option should be considered.
 
 ---
 
-# Native CLI
+# Maven plugin
 
-`mvnex` is implemented in C++.
+`mvnex` is distributed as a Maven plugin, `com.sebas3261:ex-maven-plugin`, with the goal prefix `ex`.
 
-The CLI should eventually be distributable as native binaries for:
+Running inside Maven fits the core principle directly. Maven is already installed wherever `mvnex` is useful, so the plugin reuses Maven's repositories, mirrors, proxies, credentials, TLS configuration, and offline mode instead of reimplementing them. The earlier native C++ CLI proved the workflows; the plugin keeps its behavior while removing the per-platform native build.
 
-```text
-macOS ARM64
-macOS x86_64
-Linux x86_64
-Linux ARM64
-Windows x86_64
-```
-
-Running `mvnex` itself should not require a JVM.
-
-A JDK/Maven installation may still be required when the requested operation inherently uses Java or Maven.
+Using the plugin requires Java 17+ and Maven 3.9.1+. Generated projects can still target any supported Java release.
 
 ---
 
 # Distribution
 
-The long-term installation experience should be simple.
-
-macOS:
+The installation experience should stay simple:
 
 ```bash
-brew install mvnex
+mvn com.sebas3261:ex-maven-plugin:<version>:setup   # once, registers the ex: prefix
+mvn ex:init
 ```
 
-Windows:
+Today, releases are published as GitHub prereleases containing the plugin JAR and POM, which users install with `mvn install:install-file` (or build from source with `mvn install`).
 
-```bash
-winget install mvnex
-```
+Publishing to Maven Central is the next distribution step. It would make `mvn com.sebas3261:ex-maven-plugin:<version>:setup` work with no manual install.
 
-Linux may initially provide a portable installer in addition to package-manager options.
-
-GitHub Releases should provide standalone binaries.
-
-Release creation should eventually be automated through CI/CD.
+Release creation is automated by CI: pushing a `v*` tag builds and attaches the release files.
 
 ---
 

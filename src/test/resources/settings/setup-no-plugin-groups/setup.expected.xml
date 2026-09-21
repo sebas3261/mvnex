@@ -1,0 +1,8 @@
+<settings>
+    <localRepository>/tmp/repo</localRepository>
+    <mirrors>
+    </mirrors>
+    <pluginGroups>
+        <pluginGroup>com.sebas3261</pluginGroup>
+    </pluginGroups>
+</settings>

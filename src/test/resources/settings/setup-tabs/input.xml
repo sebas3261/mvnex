@@ -1,0 +1,5 @@
+<settings>
+	<pluginGroups>
+		<pluginGroup>org.mortbay.jetty</pluginGroup>
+	</pluginGroups>
+</settings>

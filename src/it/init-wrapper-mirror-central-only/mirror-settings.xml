@@ -1,0 +1,9 @@
+<settings>
+  <mirrors>
+    <mirror>
+      <id>central</id>
+      <mirrorOf>central</mirrorOf>
+      <url>https://nexus.acme.corp/repository/central</url>
+    </mirror>
+  </mirrors>
+</settings>

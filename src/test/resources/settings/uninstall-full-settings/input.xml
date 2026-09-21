@@ -1,0 +1,21 @@
+<settings>
+  <localRepository>/opt/m2</localRepository>
+  <pluginGroups>
+    <pluginGroup>org.a</pluginGroup>
+    <pluginGroup>com.sebas3261</pluginGroup>
+    <pluginGroup>org.b</pluginGroup>
+  </pluginGroups>
+  <servers>
+    <server><id>nexus</id><username>u</username><password>{secret}</password></server>
+  </servers>
+  <mirrors>
+    <mirror><id>m</id><mirrorOf>*</mirrorOf><url>https://nexus.acme.corp/repository/maven-public</url></mirror>
+  </mirrors>
+  <proxies>
+    <proxy><id>p</id><active>true</active><protocol>https</protocol><host>proxy.corp</host><port>3128</port></proxy>
+  </proxies>
+  <profiles>
+    <profile><id>x</id><properties><a>b</a></properties></profile>
+  </profiles>
+  <activeProfiles><activeProfile>x</activeProfile></activeProfiles>
+</settings>
